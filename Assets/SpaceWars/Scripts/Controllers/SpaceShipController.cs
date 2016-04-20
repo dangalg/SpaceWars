@@ -58,6 +58,7 @@ public class SpaceShipController : Photon.MonoBehaviour
 
 		} else {
 			Debug.Log ("Other player is active id: " + photonView.ownerId);
+			TheOthersManager.instance.AddOtherPLayer (photonView.ownerId, gameObject);
 		}
 
 		if (photonView.isMine) {
@@ -84,10 +85,7 @@ public class SpaceShipController : Photon.MonoBehaviour
 	{
 		if (photonView.isMine && tag != "Enemy") {
 			if (Input.GetMouseButton (0)) {
-				if (!thrusting) {
-					thrusting = true;
-					photonView.RPC ("StartThrottle", PhotonTargets.All, photonView.ownerId);
-				}
+				
 
 				if (!buttonDown) {
 					buttonDown = true;
@@ -97,10 +95,6 @@ public class SpaceShipController : Photon.MonoBehaviour
 				AimShip (Input.mousePosition, true);
 
 			} else {
-				if (thrusting) {
-					thrusting = false;
-					photonView.RPC ("StopThrottle", PhotonTargets.All, photonView.ownerId);
-				}
 				_pd.Move = false;
 			}
 
@@ -135,6 +129,10 @@ public class SpaceShipController : Photon.MonoBehaviour
 	public void AimShip (Vector3 targetPosition, bool isMouse)
 	{
 		if (_pd != null) {
+			if (!thrusting) {
+				thrusting = true;
+				photonView.RPC ("StartThrottle", PhotonTargets.All, photonView.ownerId);
+			}
 			_pd.Move = true;
 			_pd.TargetPosition = targetPosition;
 			_pd.TargetPosition = new Vector3 (_pd.TargetPosition.x, _pd.TargetPosition.y, (distanceFromCamera + _pd.TargetPosition.z));
@@ -171,7 +169,10 @@ public class SpaceShipController : Photon.MonoBehaviour
 
 				_rb.AddForce (moveDirection * Time.deltaTime * _pd.MoveSpeed);
 			} else {
-
+				if (thrusting) {
+					thrusting = false;
+					photonView.RPC ("StopThrottle", PhotonTargets.All, photonView.ownerId);
+				}
 				_rb.velocity = _rb.velocity * 0.99f;
 				_rb.angularVelocity = _rb.angularVelocity * 0.5f;
 			}

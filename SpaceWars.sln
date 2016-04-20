@@ -1,0 +1,35 @@
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2008
+
+Project("{DAC6D19B-C09A-DECA-3C72-45B72EBC3EA3}") = "SpaceWars", "Assembly-CSharp-firstpass.csproj", "{5BB68885-19CD-7BA5-402F-590A767F9696}"
+EndProject
+Project("{DAC6D19B-C09A-DECA-3C72-45B72EBC3EA3}") = "SpaceWars", "Assembly-CSharp.csproj", "{22CF2C35-CC3F-3E8F-34C1-301D8A9CBFCD}"
+EndProject
+Project("{DAC6D19B-C09A-DECA-3C72-45B72EBC3EA3}") = "SpaceWars", "Assembly-CSharp-Editor.csproj", "{2088F2AA-7AFD-BF38-3BA3-E820918D04E4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5BB68885-19CD-7BA5-402F-590A767F9696}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5BB68885-19CD-7BA5-402F-590A767F9696}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5BB68885-19CD-7BA5-402F-590A767F9696}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5BB68885-19CD-7BA5-402F-590A767F9696}.Release|Any CPU.Build.0 = Release|Any CPU
+		{22CF2C35-CC3F-3E8F-34C1-301D8A9CBFCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{22CF2C35-CC3F-3E8F-34C1-301D8A9CBFCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{22CF2C35-CC3F-3E8F-34C1-301D8A9CBFCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{22CF2C35-CC3F-3E8F-34C1-301D8A9CBFCD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2088F2AA-7AFD-BF38-3BA3-E820918D04E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2088F2AA-7AFD-BF38-3BA3-E820918D04E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2088F2AA-7AFD-BF38-3BA3-E820918D04E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2088F2AA-7AFD-BF38-3BA3-E820918D04E4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = Assembly-CSharp.csproj
+	EndGlobalSection
+EndGlobal

@@ -126,7 +126,6 @@ public class SWOnJoinedInstantiate : MonoBehaviour
 					spaceShipClone.tag = tag;
 					spaceShipClone.GetComponent<PhotonView> ().ownerId = id;
 					spaceShipClone.GetComponent<EnemyController> ().enabled = true;
-					TheOthersManager.instance.AddOtherPLayer (id, spaceShipClone);
 				} else {
 					Debug.Log ("create me");
 					GameObject spaceShipClone = PhotonNetwork.Instantiate (o.name, itempos, Quaternion.identity, 0) as GameObject;
@@ -145,7 +144,7 @@ public class SWOnJoinedInstantiate : MonoBehaviour
 
 	IEnumerator createEnemies ()
 	{
-		for (int i = 0; i < 10; i++) {
+		for (int i = 0; i < 0; i++) {
 			createSpaceShip ("Enemy", i + 10000);
 			yield return new WaitForSeconds (2f);
 		}
