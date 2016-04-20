@@ -1,0 +1,16 @@
+﻿<Properties StartupItem="Assembly-CSharp.csproj" RefactoringSettings.EnableRefactorings="True">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets/SpaceWars/Scripts/Managers/EnemyController.cs">
+    <Files>
+      <File FileName="Assets/SpaceWars/Scripts/Managers/EnemyController.cs" Line="39" Column="24" />
+      <File FileName="Assets/SpaceWars/Scripts/Managers/TheOthersManager.cs" Line="93" Column="27" />
+      <File FileName="Assets/SpaceWars/Scripts/Controllers/SpaceShipController.cs" Line="96" Column="5" />
+      <File FileName="Assets/SpaceWars/Scripts/Network/SWOnJoinedInstantiate.cs" Line="148" Column="25" />
+      <File FileName="Assets/SpaceWars/Scripts/UI/HUDController.cs" Line="18" Column="32" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
