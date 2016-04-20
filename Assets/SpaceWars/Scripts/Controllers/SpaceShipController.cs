@@ -195,6 +195,7 @@ public class SpaceShipController : Photon.MonoBehaviour
 		_pd.Life += hitPower;
 	}
 
+
 	void IDied (PlayerDetails pd)
 	{
 		if (shipDestroyed != null) {
@@ -210,8 +211,17 @@ public class SpaceShipController : Photon.MonoBehaviour
 			if (tag != "Enemy") {
 				ResetPlayer ();
 			} else {
-				Destroy (gameObject);
+				photonView.RPC ("DestroyNPC", PhotonTargets.All, photonView.ownerId);
 			}
+		}
+	}
+
+	[PunRPC]
+	public void DestroyNPC (int playerID)
+	{
+		if (playerID == photonView.ownerId) {
+			Debug.Log ("DestroyNPC");
+			Destroy (gameObject);
 		}
 	}
 

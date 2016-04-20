@@ -105,12 +105,12 @@ public class EnemyController : MonoBehaviour
 
 		moveToTarget ();
 
-		if (isTargetInRange ()) {
-			if (Time.time > lastFireTime + firingDelay) {
-				lastFireTime = Time.time;
-				controller.photonView.RPC ("FireWeapon", PhotonTargets.All, controller.photonView.ownerId);
-			}
-		}
+//		if (isTargetInRange ()) {
+//			if (Time.time > lastFireTime + firingDelay) {
+//				lastFireTime = Time.time;
+//				controller.photonView.RPC ("FireWeapon", PhotonTargets.All, controller.photonView.ownerId);
+//			}
+//		}
 	}
 
 
