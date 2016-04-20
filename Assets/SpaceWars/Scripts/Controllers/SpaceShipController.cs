@@ -52,13 +52,9 @@ public class SpaceShipController : Photon.MonoBehaviour
 		if (photonView.isMine && tag != "Enemy") {
 			Debug.Log ("I am active");
 			myCamera.SetActive (true);
-			TheOthersManager.instance.mainPlayer = gameObject;
-			TheOthersManager.instance.mainPlayerID = photonView.ownerId;
-			TheOthersManager.instance.RadarOn = true;
 
 		} else {
 			Debug.Log ("Other player is active id: " + photonView.ownerId);
-			TheOthersManager.instance.AddOtherPLayer (photonView.ownerId, gameObject);
 		}
 
 		if (photonView.isMine) {

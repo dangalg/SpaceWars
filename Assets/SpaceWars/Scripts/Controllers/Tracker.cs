@@ -26,7 +26,7 @@ public class Tracker : MonoBehaviour
 
 	void Update ()
 	{
-		if (on) {
+		if (on && goToTrack != null) {
 			Vector3 v3Screen = Camera.main.WorldToViewportPoint (goToTrack.transform.position);
 			if (v3Screen.x > -0.01f && v3Screen.x < 1.01f && v3Screen.y > -0.01f && v3Screen.y < 1.01f)
 				_renderer.enabled = false;

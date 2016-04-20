@@ -59,7 +59,6 @@ public class SWOnJoinedInstantiate : MonoBehaviour
 	public void OnPhotonPlayerDisconnected (PhotonPlayer player)
 	{
 		Debug.Log ("OnPhotonPlayerDisconnected: " + player.ID);
-		TheOthersManager.instance.RemoveOtherPLayer (player.ID);
 
 		if (PhotonNetwork.isMasterClient) {
 			if (player.ID == playerWhoIsIt) {
@@ -124,7 +123,6 @@ public class SWOnJoinedInstantiate : MonoBehaviour
 					Debug.Log ("create enemy");
 					GameObject spaceShipClone = PhotonNetwork.InstantiateSceneObject (o.name, itempos, Quaternion.identity, 0, null) as GameObject;
 					spaceShipClone.tag = tag;
-					spaceShipClone.GetComponent<PhotonView> ().ownerId = id;
 					spaceShipClone.GetComponent<EnemyController> ().enabled = true;
 				} else {
 					Debug.Log ("create me");
@@ -144,7 +142,7 @@ public class SWOnJoinedInstantiate : MonoBehaviour
 
 	IEnumerator createEnemies ()
 	{
-		for (int i = 0; i < 0; i++) {
+		for (int i = 0; i < 10; i++) {
 			createSpaceShip ("Enemy", i + 10000);
 			yield return new WaitForSeconds (2f);
 		}
