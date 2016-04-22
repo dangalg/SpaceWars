@@ -12,13 +12,18 @@ public class EnemyController : MonoBehaviour
 	bool targetAquired = false;
 	public float firingRange = 50.0f;
 	public float firingDelay = 0.5f;
+	public float escapeAfterHitTime = 0.05f;
+	public float dodgeAfterHitAmount = 30f;
 	float lastFireTime = Time.time;
+	float lastHitTime = Time.time;
+
+	int[] directionChoice = new int[]{ -1, 1 };
 
 	// Use this for initialization
 	void Start ()
 	{
 		controller = GetComponent<SpaceShipController> ();
-
+		controller.hit += hit;
 		//velocty = (target.position - transform.position).normalized * speed;
 
 	}
@@ -30,7 +35,6 @@ public class EnemyController : MonoBehaviour
 			
 			GameObject[] targets = GameObject.FindGameObjectsWithTag ("SpaceShip");
 			GameObject[] enemies = GameObject.FindGameObjectsWithTag ("Enemy");
-
 
 			GameObject[] newArray = new GameObject[targets.Length + enemies.Length];
 			System.Array.Copy (targets, newArray, targets.Length);
@@ -52,10 +56,39 @@ public class EnemyController : MonoBehaviour
 
 			target = finalListWithoutMe [rIndex];
 
-			target.GetComponent<SpaceShipController> ().shipDestroyed += targetDestroyed;
+			if (target != null && target.GetActive ()) {
+				Debug.Log ("rIndex: " + rIndex);
+				Debug.Log ("target: " + target);
+				Debug.Log ("finalListWithoutMe.Count: " + finalListWithoutMe.Count);
+				SpaceShipController ssc = target.GetComponent<SpaceShipController> ();
+				if (ssc != null) {
+					ssc.destroyed += targetDestroyed;
+				} else {
+					targetAquired = true;
+					target = null;
+				}
+			}
 
 		}
 
+	}
+
+	void hit (int hitPower)
+	{
+		lastHitTime = Time.time;
+		int r = UnityEngine.Random.Range (0, 1);
+		dodgeAfterHitAmount = dodgeAfterHitAmount * directionChoice [r];
+	}
+
+	bool escape ()
+	{
+		if (Time.time < lastHitTime + escapeAfterHitTime && controller != null && target != null) {
+			controller.AimShip (new Vector3 (transform.position.x + dodgeAfterHitAmount, transform.position.y + dodgeAfterHitAmount, transform.position.z), false);
+			controller.MoveShip ();
+			return true;
+		}
+		dodgeAfterHitAmount = Mathf.Abs (dodgeAfterHitAmount);
+		return false;
 	}
 
 	void targetDestroyed (int targetID)
@@ -101,6 +134,7 @@ public class EnemyController : MonoBehaviour
 	// Update is called once per frame
 	void FixedUpdate ()
 	{
+//		if (!escape ()) {
 		aquireTarget ();
 
 		moveToTarget ();
@@ -111,6 +145,7 @@ public class EnemyController : MonoBehaviour
 				controller.photonView.RPC ("FireWeapon", PhotonTargets.All, controller.photonView.ownerId);
 			}
 		}
+//		}
 	}
 
 

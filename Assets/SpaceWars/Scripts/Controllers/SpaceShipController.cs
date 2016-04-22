@@ -30,7 +30,8 @@ public class SpaceShipController : Photon.MonoBehaviour
 	public static Action<int> shipHit;
 	public static Action<int> shipReset;
 
-	public Action<int> shipDestroyed;
+	public Action<int> destroyed;
+	public Action<int> hit;
 
 
 	[SerializeField] private float distanceFromCamera = 10.0f;
@@ -55,6 +56,10 @@ public class SpaceShipController : Photon.MonoBehaviour
 
 		} else {
 			Debug.Log ("Other player is active id: " + photonView.ownerId);
+		}
+
+		if (tag == "Enemy") {
+			_rb.freezeRotation = true;
 		}
 
 		if (photonView.isMine) {
@@ -186,7 +191,11 @@ public class SpaceShipController : Photon.MonoBehaviour
 			if (shipHit != null && tag != "Enemy") {
 				shipHit (hitPower);
 			}
+
 			_pd.Life -= hitPower;
+			if (_pd.Life > 0 && hit != null) {
+				hit (hitPower);
+			}
 		}
 	}
 
@@ -198,8 +207,8 @@ public class SpaceShipController : Photon.MonoBehaviour
 
 	void IDied (PlayerDetails pd)
 	{
-		if (shipDestroyed != null) {
-			shipDestroyed (photonView.ownerId);
+		if (destroyed != null) {
+			destroyed (photonView.ownerId);
 		}
 		if (photonView.isMine) {	
 			// dissapear player and make explosion at player location
