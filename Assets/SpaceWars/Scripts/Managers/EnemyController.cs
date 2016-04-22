@@ -134,18 +134,18 @@ public class EnemyController : MonoBehaviour
 	// Update is called once per frame
 	void FixedUpdate ()
 	{
-//		if (!escape ()) {
-		aquireTarget ();
+		if (!escape ()) {
+			aquireTarget ();
 
-		moveToTarget ();
+			moveToTarget ();
 
-		if (isTargetInRange ()) {
-			if (Time.time > lastFireTime + firingDelay) {
-				lastFireTime = Time.time;
-				controller.photonView.RPC ("FireWeapon", PhotonTargets.All, controller.photonView.ownerId);
+			if (isTargetInRange ()) {
+				if (Time.time > lastFireTime + firingDelay) {
+					lastFireTime = Time.time;
+					controller.photonView.RPC ("FireWeapon", PhotonTargets.All, controller.photonView.ownerId);
+				}
 			}
 		}
-//		}
 	}
 
 
