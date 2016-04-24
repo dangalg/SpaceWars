@@ -7,7 +7,8 @@ public class SWOnJoinedInstantiate : MonoBehaviour
 	private static PhotonView ScenePhotonView;
 	public Transform SpawnPosition;
 	public float PositionOffset = 2.0f;
-	public GameObject[] PrefabsToInstantiate;
+	public GameObject spaceShip;
+	public GameObject botSpaceShip;
 	public GameObject asteroid;
 	public float boundry = 400f;
 	bool alive = true;
@@ -29,7 +30,7 @@ public class SWOnJoinedInstantiate : MonoBehaviour
 		}
 
 
-		createSpaceShip (null, 0);
+		createSpaceShip (spaceShip, null, 0);
 
 		if (PhotonNetwork.isMasterClient == false) {
 			return;
@@ -104,31 +105,27 @@ public class SWOnJoinedInstantiate : MonoBehaviour
 		asteroidClone.GetComponent<AsteroidController> ().died += createAsteroid;
 	}
 
-	void createSpaceShip (string tag, int id)
+	void createSpaceShip (GameObject objectToInstantiate, string tag, int id)
 	{
-		
-		if (this.PrefabsToInstantiate != null) {
-			foreach (GameObject o in this.PrefabsToInstantiate) {
-				Debug.Log ("Instantiating: " + o.name);
-				Vector3 spawnPos = Vector3.up;
-				if (this.SpawnPosition != null) {
-					spawnPos = this.SpawnPosition.position;
-				}
-				Vector3 random = Random.insideUnitSphere;
-				random.y = 0;
-				random = random.normalized;
-				Vector3 itempos = spawnPos + this.PositionOffset * random;
+		Debug.Log ("Instantiating: " + objectToInstantiate.name);
+		Vector3 spawnPos = Vector3.up;
+		if (this.SpawnPosition != null) {
+			spawnPos = this.SpawnPosition.position;
+		}
+		Vector3 random = Random.insideUnitSphere;
+		random.y = 0;
+		random = random.normalized;
+		Vector3 itempos = spawnPos + this.PositionOffset * random;
 
-				if (tag != null) {
-					Debug.Log ("create enemy");
-					GameObject spaceShipClone = PhotonNetwork.InstantiateSceneObject (o.name, itempos, Quaternion.identity, 0, null) as GameObject;
-					spaceShipClone.tag = tag;
-					spaceShipClone.GetComponent<EnemyController> ().enabled = true;
-				} else {
-					Debug.Log ("create me");
-					GameObject spaceShipClone = PhotonNetwork.Instantiate (o.name, itempos, Quaternion.identity, 0) as GameObject;
-				}
-			}
+		if (tag != null) {
+			Debug.Log ("create bot");
+			GameObject spaceShipClone = PhotonNetwork.InstantiateSceneObject (objectToInstantiate.name, itempos, Quaternion.identity, 0, null) as GameObject;
+			spaceShipClone.tag = tag;
+			spaceShipClone.GetComponent<SpaceShipController> ().setupShip ("bot " + id.ToString ());
+			spaceShipClone.GetComponent<EnemyController> ().enabled = true;
+		} else {
+			Debug.Log ("create ship");
+			GameObject spaceShipClone = PhotonNetwork.Instantiate (objectToInstantiate.name, itempos, Quaternion.identity, 0) as GameObject;
 		}
 	}
 
@@ -143,7 +140,7 @@ public class SWOnJoinedInstantiate : MonoBehaviour
 	IEnumerator createEnemies ()
 	{
 		for (int i = 0; i < 10; i++) {
-			createSpaceShip ("Enemy", i + 10000);
+			createSpaceShip (botSpaceShip, "Enemy", i + 10000);
 			yield return new WaitForSeconds (2f);
 		}
 	}

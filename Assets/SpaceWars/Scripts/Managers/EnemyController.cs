@@ -110,7 +110,7 @@ public class EnemyController : MonoBehaviour
 	{
 		if (target != null) {
 
-			Vector3 start = transform.position;
+			Vector3 start = finalDetected.transform.position;
 			Vector3 direction = (finalDetected.transform.position - transform.position).normalized;
 			float distance = firingRange;
 
@@ -120,7 +120,8 @@ public class EnemyController : MonoBehaviour
 			//do the ray test
 			RaycastHit2D sightTest = Physics2D.Raycast (start, direction, distance);
 			if (sightTest.collider != null) {
-				if (sightTest.collider.gameObject.name == target.name) {
+				Debug.Log ("sightTest" + sightTest.collider.gameObject.tag + " target " + target.tag);
+				if (sightTest.collider.gameObject.tag == target.tag) {
 					return true;
 				}
 			}

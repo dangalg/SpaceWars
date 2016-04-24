@@ -2,6 +2,7 @@
 using System.Collections;
 using UnityEngine.UI;
 using System;
+using System.Collections.Generic;
 
 
 public class SpaceShipController : Photon.MonoBehaviour
@@ -13,13 +14,16 @@ public class SpaceShipController : Photon.MonoBehaviour
 	public float _boundry = 400f;
 	public float maxSpeed = 100f;
 	public GameObject explosion;
-	public GameObject bullet;
-	public GameObject shotPosition;
+	public List<GameObject> bullet;
+	public List<GameObject> shotPosition;
 	public float shotDelay = 0.0f;
 	public float clickDelay = 1f;
 	public ParticleSystem jetFlare;
 	public int startingLife = 5;
 	public AudioClip weaponFire;
+
+	public TextMesh playerNameText;
+	public string playerName;
 
 	private bool thrusting = false;
 	private float lastShotTime = 0f;
@@ -53,6 +57,8 @@ public class SpaceShipController : Photon.MonoBehaviour
 		if (photonView.isMine && tag != "Enemy") {
 			Debug.Log ("I am active");
 			myCamera.SetActive (true);
+			playerName = PlayerPrefs.GetString (PlayerManager.PLAYER_NAME);
+			photonView.RPC ("SetupShip", PhotonTargets.All, photonView.ownerId, playerName);
 
 		} else {
 			Debug.Log ("Other player is active id: " + photonView.ownerId);
@@ -65,7 +71,23 @@ public class SpaceShipController : Photon.MonoBehaviour
 		if (photonView.isMine) {
 			ResetPlayer ();
 		}
-		//		StartCoroutine (growPlayerOverTime ());
+
+
+	}
+
+	public void setupShip (string playerName)
+	{
+		photonView.RPC ("SetupShip", PhotonTargets.All, photonView.ownerId, playerName);
+	}
+
+	[PunRPC]
+	public void SetupShip (int playerID, string playerName)
+	{
+		if (playerID == photonView.ownerId) {
+			Debug.Log ("Setting up player " + playerName);
+			playerName = playerName;
+			playerNameText.text = playerName;
+		}
 	}
 
 	[PunRPC]
@@ -74,8 +96,10 @@ public class SpaceShipController : Photon.MonoBehaviour
 		if (playerID == photonView.ownerId) {
 			if (Time.time > lastShotTime + shotDelay) {
 				lastShotTime = Time.time;
-				GameObject shotClone = Instantiate (bullet, shotPosition.transform.position, shotPosition.transform.rotation) as GameObject;
-				shotClone.transform.SetParent (transform.parent);
+				for (int i = 0; i < shotPosition.Count; i++) {
+					GameObject shotClone = Instantiate (bullet [i], shotPosition [i].transform.position, shotPosition [i].transform.rotation) as GameObject;
+					shotClone.transform.SetParent (transform.parent);
+				}
 				SWSoundManager.instance.PlaySingle (weaponFire);
 			}
 		}

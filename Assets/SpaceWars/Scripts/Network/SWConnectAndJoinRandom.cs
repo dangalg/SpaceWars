@@ -16,10 +16,13 @@ public class SWConnectAndJoinRandom : Photon.MonoBehaviour
 	/// <summary>if we don't want to connect in Start(), we have to "remember" if we called ConnectUsingSettings()</summary>
 	private bool ConnectInUpdate = true;
 
+	byte maxPlayers = 4;
+
 
 	public virtual void Start ()
 	{
 		PhotonNetwork.autoJoinLobby = false;    // we join randomly. always. no need to join a lobby to get the list of rooms.
+		maxPlayers = (byte)PlayerPrefs.GetInt (PlayerManager.MAX_PLAYERS);
 	}
 
 	public virtual void Update ()
@@ -52,7 +55,7 @@ public class SWConnectAndJoinRandom : Photon.MonoBehaviour
 	public virtual void OnPhotonRandomJoinFailed ()
 	{
 		Debug.Log ("OnPhotonRandomJoinFailed() was called by PUN. No random room available, so we create one. Calling: PhotonNetwork.CreateRoom(null, new RoomOptions() {maxPlayers = 4}, null);");
-		PhotonNetwork.CreateRoom ("debug", new RoomOptions () { maxPlayers = 4 }, null);
+		PhotonNetwork.CreateRoom ("debug", new RoomOptions () { maxPlayers = maxPlayers }, null);
 	}
 
 	// the following methods are implemented to give you some context. re-implement them as needed.

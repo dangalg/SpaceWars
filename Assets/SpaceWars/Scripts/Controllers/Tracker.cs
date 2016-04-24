@@ -5,7 +5,7 @@ public class Tracker : MonoBehaviour
 {
 	public GameObject goToTrack;
 
-	private SpriteRenderer _renderer;
+	private MeshRenderer _renderer;
 
 	bool on = true;
 
@@ -21,7 +21,7 @@ public class Tracker : MonoBehaviour
 
 	void Start ()
 	{
-		_renderer = GetComponent<SpriteRenderer> ();
+		_renderer = GetComponent<MeshRenderer> ();
 	}
 
 	void Update ()
@@ -32,10 +32,12 @@ public class Tracker : MonoBehaviour
 				_renderer.enabled = false;
 			else {
 				_renderer.enabled = true;
-				v3Screen.x = Mathf.Clamp (v3Screen.x, 0.01f, 0.99f);
-				v3Screen.y = Mathf.Clamp (v3Screen.y, 0.01f, 0.99f);
+				v3Screen.x = Mathf.Clamp (v3Screen.x, 0.05f, 0.95f);
+				v3Screen.y = Mathf.Clamp (v3Screen.y, 0.05f, 0.95f);
 				transform.position = Camera.main.ViewportToWorldPoint (v3Screen);
 			}
+
+			transform.rotation = Quaternion.identity;
 		}
 
 	}
