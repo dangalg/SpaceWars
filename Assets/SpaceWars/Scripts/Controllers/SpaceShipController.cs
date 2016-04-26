@@ -36,7 +36,7 @@ public class SpaceShipController : Photon.MonoBehaviour
 
 	public Action<int> destroyed;
 	public Action<int> hit;
-
+	public Action<int> targeted;
 
 	[SerializeField] private float distanceFromCamera = 10.0f;
 
@@ -85,8 +85,8 @@ public class SpaceShipController : Photon.MonoBehaviour
 	{
 		if (playerID == photonView.ownerId) {
 			Debug.Log ("Setting up player " + playerName);
-			playerName = playerName;
-			playerNameText.text = playerName;
+			this.playerName = playerName;
+			playerNameText.text = this.playerName;
 		}
 	}
 
@@ -104,6 +104,17 @@ public class SpaceShipController : Photon.MonoBehaviour
 			}
 		}
 	}
+
+	[PunRPC]
+	public void Targeted (int playerID)
+	{
+		if (playerID == photonView.ownerId) {
+			if (targeted != null) {
+				targeted (playerID);
+			}
+		}
+	}
+
 		
 	// Update is called once per frame
 	void FixedUpdate ()
@@ -211,7 +222,6 @@ public class SpaceShipController : Photon.MonoBehaviour
 	void ApplyDamage (int hitPower)
 	{
 		if (_pd != null && _pd.Alive) {
-			Debug.Log ("damage applied");
 			if (shipHit != null && tag != "Enemy") {
 				shipHit (hitPower);
 			}
@@ -253,7 +263,6 @@ public class SpaceShipController : Photon.MonoBehaviour
 	public void DestroyNPC (int playerID)
 	{
 		if (playerID == photonView.ownerId) {
-			Debug.Log ("DestroyNPC");
 			Destroy (gameObject);
 		}
 	}

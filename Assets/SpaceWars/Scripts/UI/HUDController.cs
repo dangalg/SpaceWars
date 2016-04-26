@@ -21,14 +21,12 @@ public class HUDController : MonoBehaviour
 
 	void resetValues (int health)
 	{
-		Debug.Log ("reset values: " + health);
 		healthSlider.maxValue = health;
 		healthSlider.value = health;
 	}
 
 	void recievedDamage (int hitPower)
 	{
-		Debug.Log ("recievedDamage: " + hitPower);
 		damaged = true;
 		healthSlider.value -= hitPower;
 	}

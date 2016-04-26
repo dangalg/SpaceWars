@@ -12,18 +12,28 @@ public class EnemyController : MonoBehaviour
 	bool targetAquired = false;
 	public float firingRange = 50.0f;
 	public float firingDelay = 0.5f;
+	public float evasionDelay = 0.2f;
 	public float escapeAfterHitTime = 0.05f;
 	public float dodgeAfterHitAmount = 30f;
+	public bool targeted = true;
+
 	float lastFireTime = Time.time;
 	float lastHitTime = Time.time;
+	float lastEvadeTime = Time.time;
+
+	bool setEvadeValues = false;
 
 	int[] directionChoice = new int[]{ -1, 1 };
+
+	public string targetTagName = "SpaceShip";
 
 	// Use this for initialization
 	void Start ()
 	{
+		evasionDelay += escapeAfterHitTime;
 		controller = GetComponent<SpaceShipController> ();
 		controller.hit += hit;
+		controller.targeted += startEvasiveManouvers;
 		//velocty = (target.position - transform.position).normalized * speed;
 
 	}
@@ -33,18 +43,18 @@ public class EnemyController : MonoBehaviour
 		if (!targetAquired || target == null || (target != null && !target.GetActive ())) {
 			targetAquired = true;
 			
-			GameObject[] targets = GameObject.FindGameObjectsWithTag ("SpaceShip");
-			GameObject[] enemies = GameObject.FindGameObjectsWithTag ("Enemy");
+			GameObject[] targets = GameObject.FindGameObjectsWithTag (targetTagName);
+//			GameObject[] enemies = GameObject.FindGameObjectsWithTag ("Enemy");
 
-			GameObject[] newArray = new GameObject[targets.Length + enemies.Length];
-			System.Array.Copy (targets, newArray, targets.Length);
-			System.Array.Copy (enemies, 0, newArray, targets.Length, enemies.Length);
+//			GameObject[] newArray = new GameObject[targets.Length + enemies.Length];
+//			System.Array.Copy (targets, newArray, targets.Length);
+//			System.Array.Copy (enemies, 0, newArray, targets.Length, enemies.Length);
 
-			Debug.Log ("newArray: " + newArray.Length);
+//			Debug.Log ("newArray: " + newArray.Length);
 
 			List<GameObject> finalListWithoutMe = new List<GameObject> ();
 
-			foreach (GameObject item in newArray) {
+			foreach (GameObject item in targets) {
 				if (item != gameObject) {
 					finalListWithoutMe.Add (item);
 				}
@@ -75,19 +85,36 @@ public class EnemyController : MonoBehaviour
 
 	void hit (int hitPower)
 	{
-		lastHitTime = Time.time;
+		setEvadeValues = false;
+		lastEvadeTime = Time.time;
 		int r = UnityEngine.Random.Range (0, 1);
-		dodgeAfterHitAmount = dodgeAfterHitAmount * directionChoice [r];
+		dodgeAfterHitAmount = Mathf.Abs (dodgeAfterHitAmount) * directionChoice [r];
 	}
 
-	bool escape ()
+	void startEvasiveManouvers (int playerID)
 	{
-		if (Time.time < lastHitTime + escapeAfterHitTime && controller != null && target != null) {
+		targeted = true;
+	}
+
+	void evade ()
+	{
+		if (targeted && !setEvadeValues && Time.time > lastEvadeTime + evasionDelay) {
+			setEvadeValues = true;
+			lastEvadeTime = Time.time;
+			int r = UnityEngine.Random.Range (0, 1);
+			dodgeAfterHitAmount = Mathf.Abs (dodgeAfterHitAmount) * directionChoice [r];
+		}
+	}
+
+	bool evasiveManouvers ()
+	{
+		if (Time.time < lastEvadeTime + escapeAfterHitTime && controller != null) {
+			setEvadeValues = false;
 			controller.AimShip (new Vector3 (transform.position.x + dodgeAfterHitAmount, transform.position.y + dodgeAfterHitAmount, transform.position.z), false);
 			controller.MoveShip ();
 			return true;
-		}
-		dodgeAfterHitAmount = Mathf.Abs (dodgeAfterHitAmount);
+		} 
+
 		return false;
 	}
 
@@ -106,46 +133,26 @@ public class EnemyController : MonoBehaviour
 		}
 	}
 
-	bool isTargetInRange ()
+	void OnTriggerStay2D (Collider2D other)
 	{
-		if (target != null) {
-
-			Vector3 start = finalDetected.transform.position;
-			Vector3 direction = (finalDetected.transform.position - transform.position).normalized;
-			float distance = firingRange;
-
-			//draw the ray in the editor
-			Debug.DrawRay (start, direction * distance, Color.red);
-
-			//do the ray test
-			RaycastHit2D sightTest = Physics2D.Raycast (start, direction, distance);
-			if (sightTest.collider != null) {
-				Debug.Log ("sightTest" + sightTest.collider.gameObject.tag + " target " + target.tag);
-				if (sightTest.collider.gameObject.tag == target.tag) {
-					return true;
-				}
+		if (other != null && other.gameObject != null && target != null && other.gameObject.tag == target.tag) {
+			if (Time.time > lastFireTime + firingDelay) {
+				lastFireTime = Time.time;
+				controller.photonView.RPC ("FireWeapon", PhotonTargets.All, controller.photonView.ownerId);
 			}
-	
 		}
-
-		return false;
-
 	}
 
 	// Update is called once per frame
 	void FixedUpdate ()
 	{
-		if (!escape ()) {
+		if (!evasiveManouvers ()) {
+
 			aquireTarget ();
 
 			moveToTarget ();
 
-			if (isTargetInRange ()) {
-				if (Time.time > lastFireTime + firingDelay) {
-					lastFireTime = Time.time;
-					controller.photonView.RPC ("FireWeapon", PhotonTargets.All, controller.photonView.ownerId);
-				}
-			}
+			evade ();
 		}
 	}
 
