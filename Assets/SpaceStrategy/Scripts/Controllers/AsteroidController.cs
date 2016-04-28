@@ -3,11 +3,20 @@ using System.Collections;
 
 namespace SpaceStrategy
 {
-	public class AsteroidController : MonoBehaviour
+	public class AsteroidController : MonoBehaviour, ITarget
 	{
 
 		public GameObject explosion;
-		public System.Action died;
+		private System.Action _targetDestroyed;
+
+		public System.Action targetDestroyed {
+			get {
+				return _targetDestroyed;
+			}
+			set {
+				_targetDestroyed = value;
+			}
+		}
 
 		int life = 1;
 
@@ -21,13 +30,13 @@ namespace SpaceStrategy
 		// Use this for initialization
 		void Start ()
 		{
-			float randomSpeed = UnityEngine.Random.Range (2f, 8f);
-			int randomScale = UnityEngine.Random.Range (1, 10);
-			life = randomScale;
-			transform.localScale = Vector3.one * (float)randomScale;
-			_rb.mass = (float)randomScale;
-
-			float randomAutoDestroy = UnityEngine.Random.Range (3f, 20f);
+//			float randomSpeed = UnityEngine.Random.Range (2f, 8f);
+//			int randomScale = UnityEngine.Random.Range (1, 10);
+//			life = randomScale;
+//			transform.localScale = Vector3.one * (float)randomScale;
+//			_rb.mass = (float)randomScale;
+//
+//			float randomAutoDestroy = UnityEngine.Random.Range (3f, 20f);
 
 			//Uncomment this to move asteroids
 //		float rX = UnityEngine.Random.Range (20f, -20f);
@@ -48,9 +57,7 @@ namespace SpaceStrategy
 		{
 			life -= hitPower;
 			if (life <= 0) {
-				if (died != null) {
-					died ();
-				}
+				
 				CancelInvoke ("ApplyDamage");
 				GameObject explosionClone = Instantiate (explosion, transform.position, transform.rotation) as GameObject;
 				explosionClone.transform.position = transform.position;
@@ -62,6 +69,10 @@ namespace SpaceStrategy
 
 		void OnDestroy ()
 		{
+			if (_targetDestroyed != null) {
+				_targetDestroyed ();
+
+			}
 			CancelInvoke ("ApplyDamage");
 		}
 	}

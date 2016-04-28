@@ -28,7 +28,7 @@ namespace SpaceStrategy
 
 		int[] directionChoice;
 
-		public string targetTagName = "SpaceShip";
+		public string[] targetTags;
 
 		// Use this for initialization
 		void Start ()
@@ -49,49 +49,29 @@ namespace SpaceStrategy
 		{
 			if (!targetAquired || target == null || (target != null && !target.GetActive ())) {
 				targetAquired = true;
-			
-				GameObject[] targets = GameObject.FindGameObjectsWithTag (targetTagName);
 
-//			GameObject[] enemies = GameObject.FindGameObjectsWithTag ("Enemy");
+				target = TargetTools.aquireRandomTargetByTagsWithoutMe (gameObject, targetTags);
 
-//			GameObject[] newArray = new GameObject[targets.Length + enemies.Length];
-//			System.Array.Copy (targets, newArray, targets.Length);
-//			System.Array.Copy (enemies, 0, newArray, targets.Length, enemies.Length);
-
-//			Debug.Log ("newArray: " + newArray.Length);
-
-				List<GameObject> finalListWithoutMe = new List<GameObject> ();
-
-				foreach (GameObject item in targets) {
-					if (item != gameObject) {
-						finalListWithoutMe.Add (item);
+				if (target != null && target.GetActive ()) {
+					ITarget itarget = target.GetComponent<ITarget> ();
+					if (itarget != null) {
+						itarget.targetDestroyed += targetDestroyed;
+					} else {
+						targetAquired = false;
+						target = null;
 					}
+				} else {
+					targetAquired = false;
+					target = null;
 				}
+			} 
+		}
 
-				if (finalListWithoutMe.Count > 0) {
-//					Debug.Log ("finalListWithoutMe: " + finalListWithoutMe.Count);
-
-					int rIndex = UnityEngine.Random.Range (0, finalListWithoutMe.Count);
-
-
-					target = finalListWithoutMe [rIndex];
-
-					if (target != null && target.GetActive ()) {
-//						Debug.Log ("rIndex: " + rIndex);
-//						Debug.Log ("target: " + target);
-//						Debug.Log ("finalListWithoutMe.Count: " + finalListWithoutMe.Count);
-						SpaceShipController ssc = target.GetComponent<SpaceShipController> ();
-						if (ssc != null) {
-							ssc.destroyed += targetDestroyed;
-						} else {
-							targetAquired = true;
-							target = null;
-						}
-					}
-
-				}
-			}
-
+		void targetDestroyed ()
+		{
+			targetAquired = false;
+			target = null;
+			move = true;
 		}
 
 		void hit (int hitPower)
@@ -127,12 +107,6 @@ namespace SpaceStrategy
 			} 
 
 			return false;
-		}
-
-		void targetDestroyed ()
-		{
-			targetAquired = false;
-			target = null;
 		}
 
 		void turnToTarget ()
@@ -177,7 +151,6 @@ namespace SpaceStrategy
 
 				if (move) {
 
-					
 					moveToTarget ();
 
 					evade ();

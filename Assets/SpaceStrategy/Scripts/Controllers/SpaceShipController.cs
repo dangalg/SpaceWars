@@ -6,12 +6,14 @@ using System.Collections.Generic;
 
 namespace SpaceStrategy
 {
-	public class SpaceShipController : MonoBehaviour
+	public class SpaceShipController : MonoBehaviour, ITarget
 	{
-
+		
 		private PlayerDetails _pd;
+		public string playerName;
 		public float _boundry = 400f;
 		public float maxSpeed = 100f;
+		public float rotationSpeed = 5f;
 		public GameObject explosion;
 		public List<GameObject> bullet;
 		public List<GameObject> shotPosition;
@@ -22,7 +24,6 @@ namespace SpaceStrategy
 		public AudioClip weaponFire;
 
 		public TextMesh playerNameText;
-		public string playerName;
 
 		private bool thrusting = false;
 		private float lastShotTime = 0f;
@@ -33,9 +34,18 @@ namespace SpaceStrategy
 		public static Action<int> shipHit;
 		public static Action<int> shipReset;
 
-		public Action destroyed;
+		public Action _targetDestroyed;
 		public Action<int> hit;
 		public Action targeted;
+
+		public Action targetDestroyed {
+			get {
+				return _targetDestroyed;
+			}
+			set {
+				_targetDestroyed = value;
+			}
+		}
 
 		[SerializeField] private float distanceFromCamera = 10.0f;
 
@@ -53,17 +63,8 @@ namespace SpaceStrategy
 		void Start ()
 		{
 			_rb = GetComponent<Rigidbody2D> ();
-
-			Debug.Log ("I am active");
-			playerName = PlayerPrefs.GetString (PlayerManager.PLAYER_NAME);
-
-
-			if (tag == "Enemy") {
-				_rb.freezeRotation = true;
-			}
-
-
 			ResetPlayer ();
+
 		}
 
 		public void FireWeapon ()
@@ -104,35 +105,28 @@ namespace SpaceStrategy
 
 		public void AimShip (Vector3 targetPosition, bool isMouse)
 		{
-			if (_pd != null) {
-				if (!thrusting) {
-					thrusting = true;
-				}
-				_pd.Move = true;
-				_pd.TargetPosition = targetPosition;
-				_pd.TargetPosition = new Vector3 (_pd.TargetPosition.x, _pd.TargetPosition.y, (distanceFromCamera + _pd.TargetPosition.z));
-				if (isMouse) {
-					_pd.TargetPosition = Camera.main.ScreenToWorldPoint (new Vector3 (targetPosition.x, targetPosition.y, _pd.TargetPosition.z));
-				}
-				// set boundries
-				float _x = Mathf.Clamp (_pd.TargetPosition.x, -_boundry, _boundry);
-				float _y = Mathf.Clamp (_pd.TargetPosition.y, -_boundry, _boundry);
-				_pd.TargetPosition = new Vector3 (_x, _y, _pd.TargetPosition.z);
-
-
-				Vector3 vectorToTarget = _pd.TargetPosition - transform.position;
-				float angle = Mathf.Atan2 (vectorToTarget.y, vectorToTarget.x) * Mathf.Rad2Deg;
-				Quaternion q = Quaternion.AngleAxis (angle, Vector3.forward);
-				transform.rotation = Quaternion.Slerp (transform.rotation, q, Time.deltaTime * _pd.RotateSpeed);
-
-//				Vector3 rotateDirection = _pd.TargetPosition - transform.position;
-//
-//				var newRotation = Quaternion.LookRotation (rotateDirection, Vector3.right);
-//				newRotation.x = 0.0f;
-//				newRotation.y = 0.0f;
-//				transform.rotation = Quaternion.Slerp (transform.rotation, newRotation, _pd.RotateSpeed * Time.deltaTime);
-
+//			if (_pd != null) {
+			if (!thrusting) {
+				thrusting = true;
 			}
+			_pd.Move = true;
+			_pd.TargetPosition = targetPosition;
+			_pd.TargetPosition = new Vector3 (_pd.TargetPosition.x, _pd.TargetPosition.y, (distanceFromCamera + _pd.TargetPosition.z));
+			if (isMouse) {
+				_pd.TargetPosition = Camera.main.ScreenToWorldPoint (new Vector3 (targetPosition.x, targetPosition.y, _pd.TargetPosition.z));
+			}
+			// set boundries
+			float _x = Mathf.Clamp (_pd.TargetPosition.x, -_boundry, _boundry);
+			float _y = Mathf.Clamp (_pd.TargetPosition.y, -_boundry, _boundry);
+			_pd.TargetPosition = new Vector3 (_x, _y, _pd.TargetPosition.z);
+
+
+			Vector3 vectorToTarget = _pd.TargetPosition - transform.position;
+			float angle = Mathf.Atan2 (vectorToTarget.y, vectorToTarget.x) * Mathf.Rad2Deg;
+			Quaternion q = Quaternion.AngleAxis (angle, Vector3.forward);
+			transform.rotation = Quaternion.Slerp (transform.rotation, q, Time.deltaTime * rotationSpeed);
+
+//			}
 		}
 
 		public void MoveShip ()
@@ -142,9 +136,9 @@ namespace SpaceStrategy
 
 					_pd.CurrentPosition = transform.position;
 
-					Vector3 moveDirection = _pd.TargetPosition - transform.position;
+//					Vector3 moveDirection = _pd.TargetPosition - transform.position;
 
-					_rb.AddForce (moveDirection * Time.deltaTime * _pd.MoveSpeed);
+					_rb.AddForce (transform.right * Time.deltaTime * _pd.MoveSpeed);
 				} else {
 					if (thrusting) {
 						thrusting = false;
@@ -162,7 +156,7 @@ namespace SpaceStrategy
 		void ApplyDamage (int hitPower)
 		{
 			if (_pd != null && _pd.Alive) {
-				if (shipHit != null && tag != "Enemy") {
+				if (shipHit != null) {
 					shipHit (hitPower);
 				}
 
@@ -181,8 +175,8 @@ namespace SpaceStrategy
 
 		void IDied (PlayerDetails pd)
 		{
-			if (destroyed != null) {
-				destroyed ();
+			if (_targetDestroyed != null) {
+				_targetDestroyed ();
 			}
 			// dissapear player and make explosion at player location
 			GameObject explosionClone = Instantiate (explosion, transform.position, transform.rotation) as GameObject;
@@ -201,17 +195,17 @@ namespace SpaceStrategy
 			
 			gameObject.SetActive (true);
 
-			float rX = UnityEngine.Random.Range (-_boundry + 20f, _boundry - 20f);
-			float rY = UnityEngine.Random.Range (-_boundry + 20f, _boundry - 20f);
+//			float rX = UnityEngine.Random.Range (-_boundry + 20f, _boundry - 20f);
+//			float rY = UnityEngine.Random.Range (-_boundry + 20f, _boundry - 20f);
 
 			_pd = new PlayerDetails ();
 
 			_pd.Alive = true;
 
-			Vector3 randomPosition = new Vector3 (rX, rY, _pd.Depth);
-			_pd.CurrentPosition = randomPosition;
-			_pd.TargetPosition = randomPosition;
-			transform.position = randomPosition;
+//			Vector3 randomPosition = new Vector3 (rX, rY, _pd.Depth);
+			_pd.CurrentPosition = transform.position;
+			_pd.TargetPosition = transform.position;
+//			transform.position = randomPosition;
 
 			transform.localScale = new Vector3 (_pd.Size, _pd.Size, 1);
 			Camera.main.orthographicSize = _pd.Size * 30.0f;
@@ -225,8 +219,6 @@ namespace SpaceStrategy
 			if (shipReset != null && tag != "Enemy") {
 				shipReset (_pd.Life);
 			}
-
-			Debug.Log ("reset player");
 		}
 
 	}

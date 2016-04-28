@@ -17,17 +17,22 @@ namespace SpaceStrategy
 		public float evasionDelay = 0.2f;
 		public float escapeAfterHitTime = 0.05f;
 		public float dodgeAfterHitAmount = 30f;
-		public bool targeted = true;
 
 		float lastFireTime;
 		float lastHitTime;
 		float lastEvadeTime;
 
-		bool setEvadeValues = false;
+		Vector3 moveToPosition;
+
+		public bool evade = false;
+		float rEvadeMoveMent = 0f;
+		bool setEvadeDirection = false;
+
+		public bool dock = false;
 
 		int[] directionChoice;
 
-		public string targetTagName = "SpaceShip";
+		public string[] targetTags;
 
 		// Use this for initialization
 		void Start ()
@@ -40,7 +45,7 @@ namespace SpaceStrategy
 			controller = GetComponent<SpaceShipController> ();
 			controller.hit += hit;
 			controller.targeted += startEvasiveManouvers;
-			//velocty = (target.position - transform.position).normalized * speed;
+			moveToPosition = transform.position;
 
 		}
 
@@ -48,119 +53,115 @@ namespace SpaceStrategy
 		{
 			if (!targetAquired || target == null || (target != null && !target.GetActive ())) {
 				targetAquired = true;
-			
-				GameObject[] targets = GameObject.FindGameObjectsWithTag (targetTagName);
-				Debug.Log ("targets: " + targets.Length);
-//			GameObject[] enemies = GameObject.FindGameObjectsWithTag ("Enemy");
 
-//			GameObject[] newArray = new GameObject[targets.Length + enemies.Length];
-//			System.Array.Copy (targets, newArray, targets.Length);
-//			System.Array.Copy (enemies, 0, newArray, targets.Length, enemies.Length);
-
-//			Debug.Log ("newArray: " + newArray.Length);
-
-				List<GameObject> finalListWithoutMe = new List<GameObject> ();
-
-				foreach (GameObject item in targets) {
-					if (item != gameObject) {
-						finalListWithoutMe.Add (item);
-					}
-				}
-
-				Debug.Log ("finalListWithoutMe: " + finalListWithoutMe.Count);
-
-				int rIndex = UnityEngine.Random.Range (0, finalListWithoutMe.Count);
-
-				target = finalListWithoutMe [rIndex];
+				target = TargetTools.aquireRandomTargetByTagsWithoutMe (gameObject, targetTags);
 
 				if (target != null && target.GetActive ()) {
-					Debug.Log ("rIndex: " + rIndex);
-					Debug.Log ("target: " + target);
-					Debug.Log ("finalListWithoutMe.Count: " + finalListWithoutMe.Count);
-					SpaceShipController ssc = target.GetComponent<SpaceShipController> ();
-					if (ssc != null) {
-						ssc.destroyed += targetDestroyed;
+					ITarget itarget = target.GetComponent<ITarget> ();
+					if (itarget != null) {
+						itarget.targetDestroyed += targetDestroyed;
+
 					} else {
-						targetAquired = true;
+
+						targetAquired = false;
 						target = null;
 					}
+					moveToPosition = target.transform.position;
 				}
-
 			}
+
+
 
 		}
 
 		void hit (int hitPower)
 		{
-			setEvadeValues = false;
+			evade = true;
+			setEvadeDirection = false;
 			lastEvadeTime = Time.time;
-			int r = UnityEngine.Random.Range (0, 1);
-			dodgeAfterHitAmount = Mathf.Abs (dodgeAfterHitAmount) * directionChoice [r];
 		}
 
 		void startEvasiveManouvers ()
 		{
-			targeted = true;
+			evade = true;
 		}
 
-		void evade ()
+		void evasiveManouvers ()
 		{
-			if (targeted && !setEvadeValues && Time.time > lastEvadeTime + evasionDelay) {
-				setEvadeValues = true;
-				lastEvadeTime = Time.time;
-				int r = UnityEngine.Random.Range (0, 1);
-				dodgeAfterHitAmount = Mathf.Abs (dodgeAfterHitAmount) * directionChoice [r];
+			if (Time.time < lastEvadeTime + evasionDelay) {
+				if (!setEvadeDirection) {
+					setEvadeDirection = true;
+					lastEvadeTime = Time.time;
+					rEvadeMoveMent = UnityEngine.Random.Range (-dodgeAfterHitAmount, dodgeAfterHitAmount);
+					Vector3 fixedTargetPosition = new Vector3 ((transform.transform.position.x * -1) + rEvadeMoveMent, (transform.transform.position.y * -1) + rEvadeMoveMent, transform.position.z); 
+					moveToPosition = fixedTargetPosition;
+				}
+			} else {
+				setEvadeDirection = false;
+				evade = false;
+				targetAquired = false;
+				target = null;
+				dock = false;
 			}
-		}
 
-		bool evasiveManouvers ()
-		{
-			if (Time.time < lastEvadeTime + escapeAfterHitTime && controller != null) {
-				setEvadeValues = false;
-				controller.AimShip (new Vector3 ((transform.position.x * -1) + dodgeAfterHitAmount, (transform.position.y * -1) + dodgeAfterHitAmount, transform.position.z), false);
-				controller.MoveShip ();
-				return true;
-			} 
-
-			return false;
 		}
 
 		void targetDestroyed ()
 		{
 			targetAquired = false;
 			target = null;
+			evade = false;
+			dock = false;
 		}
 
 		void moveToTarget ()
 		{
 			if (target != null) {
-
-				controller.AimShip (target.transform.position, false);
+				
+				controller.AimShip (moveToPosition, false);
 				controller.MoveShip ();
 			}
 		}
 
 		void OnTriggerStay2D (Collider2D other)
 		{
-			if (other != null && other.gameObject != null && target != null && other.gameObject.tag == target.tag) {
-				if (Time.time > lastFireTime + firingDelay) {
-					lastFireTime = Time.time;
-					controller.FireWeapon ();
-				}
+			target = other.gameObject;
+			if (!other.name.Contains ("Star")) {
+				setEvadeDirection = false;
+				lastEvadeTime = Time.time;
+				dock = false;
+				evade = true;
+			} else {
+				dock = true;
 			}
+
+		}
+
+		void OnTriggerExit2D (Collider2D other)
+		{
+			targetAquired = false;
+			target = null;
+			dock = false;
+
 		}
 
 		// Update is called once per frame
 		void FixedUpdate ()
 		{
-			if (!evasiveManouvers ()) {
-
-				aquireTarget ();
-
-				moveToTarget ();
-
-				evade ();
+			if (dock) {
+				return;
 			}
+
+			if (evade) {
+				evasiveManouvers ();
+			} else if (!targetAquired) {
+				aquireTarget ();
+			} else if (target != null) {
+				moveToPosition = target.transform.position;
+			}
+
+			moveToTarget ();
+
 		}
 
 	}
